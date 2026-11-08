@@ -1,0 +1,64 @@
+name: Build Mr.Heart APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: "Your Netlify address, e.g. https://your-site.netlify.app"
+        required: true
+        default: "https://YOUR-SITE.netlify.app"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install ImageMagick (for the app icon)
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Install Capacitor
+        run: npm install
+
+      - name: Put the whole app inside the APK
+        env:
+          SITE_URL: ${{ github.event.inputs.site_url }}
+        run: |
+          mkdir -p www
+          cp index.html manifest.webmanifest sw.js icon-*.png heart-*.png badge-*.webp move-pushups.gif www/
+          sed -i "s#const SITE_URL = location.origin;#const SITE_URL = '${SITE_URL}';#" www/index.html
+          grep -n "const SITE_URL" www/index.html
+          npx cap add android
+          npx cap sync android
+          sed -i 's#<application#<uses-permission android:name="android.permission.VIBRATE" />\n    <application#' android/app/src/main/AndroidManifest.xml
+
+      - name: Set the Mr.Heart app icon
+        run: |
+          for d in "mdpi 48" "hdpi 72" "xhdpi 96" "xxhdpi 144" "xxxhdpi 192"; do
+            set -- $d
+            for n in ic_launcher ic_launcher_round ic_launcher_foreground; do
+              convert icon-512.png -resize ${2}x${2} android/app/src/main/res/mipmap-$1/$n.png
+            done
+          done
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/*.xml
+
+      - name: Build the APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mr-Heart-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
