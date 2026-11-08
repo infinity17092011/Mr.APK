@@ -1,0 +1,10 @@
+{
+  "appId": "com.mrheart.app",
+  "appName": "Mr.Heart",
+  "webDir": "www",
+  "backgroundColor": "#0e1124",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": ["*.paypal.com", "*.paypalobjects.com", "*.supabase.co", "*.onrender.com"]
+  }
+}

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1124">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mr.Heart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#0e1124;--card:#181c3a;--line:rgba(255,255,255,.09);--tx:#f4f5ff;--mu:#9aa0c8;--teal:#34e0c0;--fl1:#ffc25c;--fl2:#ff7a3d}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{font-family:Outfit,system-ui,sans-serif;font-weight:500;background:radial-gradient(120% 60% at 50% 0%,#232a66 0%,var(--bg) 60%) fixed;color:var(--tx);padding-top:env(safe-area-inset-top,0px)}
+h1,h2,h3{font-weight:800;letter-spacing:-.3px}
+.scr{display:none;min-height:100dvh;width:100%;max-width:460px;margin:auto;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.scr.on{display:flex;flex-direction:column}
+.mu{color:var(--mu)}.c{text-align:center}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font:inherit;font-weight:800;font-size:19px;color:#1a1020;background:linear-gradient(135deg,var(--fl1),var(--fl2));border:0;border-radius:18px;padding:17px;box-shadow:0 10px 28px rgba(255,122,61,.35);cursor:pointer;text-decoration:none}
+.btn:active{transform:scale(.98)}.btn[disabled]{opacity:.5}
+.btn.ghost{background:none;color:var(--tx);box-shadow:none;border:1.5px solid var(--line);font-size:16px;padding:13px}
+.link{background:none;border:0;color:var(--teal);font:inherit;font-weight:700;cursor:pointer;padding:10px}
+:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
+.spin{width:18px;height:18px;border:3px solid rgba(26,16,32,.25);border-top-color:#1a1020;border-radius:50%;animation:sp .8s linear infinite;display:inline-block}
+.spin.l{border-color:rgba(255,255,255,.2);border-top-color:var(--teal)}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* splash */
+#splash{justify-content:center;align-items:center;text-align:center;gap:6px}
+#splash .h{font-size:92px;animation:beat 1.2s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+#splash h1{font-size:44px}
+#wake{opacity:0;transition:opacity .4s;margin-top:28px;font-size:15px}#wake.on{opacity:1}
+/* picker */
+.grp{margin:18px 0 8px;font-size:15px;color:var(--mu);text-transform:uppercase;letter-spacing:1px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-weight:700;font-size:15px;color:var(--tx);background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:9px 14px;cursor:pointer}
+.chip.on{background:var(--teal);color:#07241e;border-color:var(--teal)}
+.bar{position:sticky;bottom:0;padding:14px 0 4px;margin-top:auto;background:linear-gradient(transparent,var(--bg) 30%)}
+.lv{display:flex;gap:12px;align-items:center;text-align:left;width:100%;font:inherit;color:var(--tx);cursor:pointer}
+.lv.on{border-color:var(--teal);background:#12323a}
+.lv b{display:block;font-size:20px}
+/* auth */
+input{width:100%;font:inherit;font-size:17px;padding:15px;margin-top:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);color:var(--tx)}
+.msg{min-height:24px;margin:10px 0;font-size:15px;color:var(--fl1)}
+.steps{counter-reset:s;list-style:none;padding:0;text-align:left;margin:18px 0}
+.steps li{counter-increment:s;padding:12px 0 12px 44px;position:relative;font-size:17px}
+.steps li:before{content:counter(s);position:absolute;left:0;top:8px;width:30px;height:30px;border-radius:50%;background:var(--teal);color:#07241e;font-weight:800;display:grid;place-items:center}
+/* pay */
+.perk{margin:6px 0;color:var(--mu)}.perk:before{content:"✓ ";color:var(--teal);font-weight:800}
+.plan{border:1.5px solid var(--line)}.plan.best{border-color:var(--fl1)}
+.badge{display:inline-block;background:linear-gradient(135deg,var(--fl1),var(--fl2));color:#1a1020;font-weight:800;font-size:12px;border-radius:8px;padding:3px 9px;margin-bottom:6px}
+.price{font-size:26px;font-weight:800}
+/* app */
+.tab{display:none}.tab.on{display:block}
+#t-home.on{display:flex;flex-direction:column;min-height:calc(100dvh - 130px)}
+#app{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+.streak{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
+.streak svg{width:46px;height:58px;filter:grayscale(.9) opacity(.5);transition:.4s}
+.streak.lit svg{filter:drop-shadow(0 0 14px rgba(255,140,60,.8))}
+.streak b{font-size:54px;font-weight:800;line-height:1}
+.streak span{display:block;font-size:13px;color:var(--mu);font-weight:600;margin-top:2px}
+.stage{display:grid;place-items:center;margin:4px 0 4px;position:relative;flex:1;min-height:220px}
+.stage:before{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(#4a52c466,transparent 70%)}
+.stage img{position:relative;width:min(80vw,350px);max-height:34vh;object-fit:contain;animation:bob 3.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.stage img,#splash .h{animation:none}}
+.row3{display:flex;gap:10px;margin-bottom:12px}.row3 .card{flex:1;text-align:center;margin:0;padding:12px 6px}
+.row3 b{display:block;font-size:26px}.row3 span{font-size:13px;color:var(--mu)}
+.xp{height:12px;border-radius:8px;background:#0e1124;overflow:hidden;margin-top:10px}.xp i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),#7aa7ff)}
+.grid14{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}
+.grid14 i{aspect-ratio:1;border-radius:10px;background:#0e1124}.grid14 i.hit{background:linear-gradient(135deg,var(--fl1),var(--fl2))}
+nav{position:fixed;left:0;right:0;bottom:0;display:none;justify-content:center;background:rgba(14,17,36,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+nav.on{display:flex}
+nav button{flex:1;max-width:150px;font:inherit;font-weight:700;font-size:14px;padding:12px 0;border:0;background:none;color:var(--mu);cursor:pointer}
+nav button.on{color:var(--fl1)}
+/* workout */
+#ex{position:fixed;inset:0;z-index:20;display:none;background:radial-gradient(120% 60% at 50% 0%,#232a66,var(--bg) 65%);flex-direction:column;align-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));text-align:center;overflow:auto}
+#ex.on{display:flex}
+#ex img{width:min(52vw,210px);height:min(46vw,190px);object-fit:contain;animation:bob 3s ease-in-out infinite}
+#ex h2{font-size:34px;margin-top:4px}
+#ex .t{font-size:96px;font-weight:800;line-height:1;margin:6px 0;background:linear-gradient(135deg,var(--fl1),var(--fl2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#ex .card{width:100%;max-width:400px;font-size:18px;line-height:1.4}
+#ex .xp{width:100%;max-width:400px}
+.scr.on,.tab.on{animation:fin .4s ease both}
+@keyframes fin{from{opacity:0;transform:translateY(10px)}}
+.pop{animation:pop .7s ease}
+@keyframes pop{40%{transform:scale(1.7)}}
+.bh{text-align:center;margin:2px 0 14px}
+.bh img{height:124px;width:auto;max-width:78vw;object-fit:contain;filter:drop-shadow(0 6px 18px rgba(255,194,92,.28))}
+img.lk{filter:grayscale(1) brightness(.3)!important;opacity:.6}
+img.ln{filter:invert(1)!important;opacity:.7}
+.cap{font-size:14px;color:var(--mu);margin-top:6px;font-weight:600}.cap.warn{color:var(--fl1)}
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;text-align:center}
+.bgrid img{width:100%;height:68px;object-fit:contain}
+.bgrid b{display:block;font-size:14px;margin-top:4px}.bgrid small{display:block;color:var(--mu);font-size:12px}
+.mini{height:6px;border-radius:4px;background:#0e1124;overflow:hidden;margin-top:6px}.mini i{display:block;height:100%;background:linear-gradient(90deg,var(--fl1),var(--fl2))}
+#cer{position:fixed;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(60% 45% at 50% 38%,#3b3f9f 0%,transparent 72%),#080a1c}
+#cer.on{display:flex}
+#cv{position:absolute;inset:0;pointer-events:none}
+.hero{position:relative;width:170px;margin-top:10px}
+.hero>img{width:100%;animation:bob 2.4s ease-in-out infinite}
+#cCrown{position:absolute;top:-14px;left:50%;width:88px;transform:translateX(-50%) rotate(-8deg);animation:drop 1s .5s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes drop{from{transform:translateX(-50%) translateY(-240px) rotate(-25deg);opacity:0}to{transform:translateX(-50%) rotate(-8deg);opacity:1}}
+#cBadge{width:min(78vw,320px);margin-top:8px;animation:slam .7s 1.2s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes slam{from{transform:scale(2.4);opacity:0}}
+#cer h2{font-size:38px;margin-top:8px;animation:rise .5s 1.7s both}
+#cer p,#cer .btn{animation:rise .5s 1.9s both}
+#cer .btn{max-width:300px;margin-top:22px}
+#cer.fast h2,#cer.fast p,#cer.fast .btn{animation-delay:.3s}
+@keyframes rise{from{transform:translateY(14px);opacity:0}}
+</style>
+</head>
+<body>
+
+<section class="scr on" id="splash">
+  <div class="h">❤️</div>
+  <h1>Mr.Heart</h1>
+  <p class="mu">Keep the beat. Keep the streak.</p>
+  <div id="wake"><span class="spin l"></span><p class="mu" style="margin-top:10px">Waking up the server...<br>The first visit can take up to a minute.</p></div>
+</section>
+
+<section class="scr" id="pick">
+  <h1>Pick your daily exercises</h1>
+  <p class="mu" style="margin-top:6px">Choose at least 3. Mr.Heart mixes them into your daily workout.</p>
+  <div id="groups"></div>
+  <div class="bar"><button class="btn" id="pickNext">Next</button>
+    <p class="c"><button class="link" id="toLogin">I already have an account</button></p></div>
+</section>
+
+<section class="scr" id="level">
+  <h1>What's your level?</h1>
+  <p class="mu" style="margin:6px 0 18px">This sets how long and how hard each workout is.</p>
+  <button class="card lv" data-lv="beginner"><span style="font-size:34px">🌱</span><span><b>Beginner</b><span class="mu">5 moves, 30 sec each, long rests</span></span></button>
+  <button class="card lv" data-lv="intermediate"><span style="font-size:34px">⚡</span><span><b>Intermediate</b><span class="mu">6 moves, 40 sec each</span></span></button>
+  <button class="card lv" data-lv="pro"><span style="font-size:34px">🏆</span><span><b>Pro</b><span class="mu">8 moves, 45 sec each, short rests</span></span></button>
+  <div class="bar"><button class="btn" id="levelNext">Next</button><p class="c"><button class="link" data-back="pick">Back</button></p></div>
+</section>
+
+<section class="scr" id="auth">
+  <div class="c"><img src="heart-awake.png" alt="" width="130"></div>
+  <h1 class="c" id="authTitle">Create your account</h1>
+  <input id="email" type="email" placeholder="Email" autocomplete="email">
+  <input id="pass" type="password" placeholder="Password (6+ characters)" autocomplete="current-password">
+  <p class="msg" id="authMsg"></p>
+  <button class="btn" id="authGo">Create account</button>
+  <p class="c"><button class="link" id="authSwap">I already have an account</button></p>
+</section>
+
+<section class="scr c" id="check" style="justify-content:center">
+  <div style="font-size:64px">📬</div>
+  <h1>Check your email</h1>
+  <p class="mu" style="margin-top:6px">We sent a confirmation link to <b id="checkMail"></b></p>
+  <ol class="steps"><li>Open the email from Mr.Heart</li><li>Tap the confirm link inside it</li><li>Come back to this page and press Log in</li></ol>
+  <button class="btn" id="checkGo">Log in</button>
+</section>
+
+<section class="scr" id="pay">
+  <div class="c"><img src="heart-awake.png" alt="" width="110"></div>
+  <h1 class="c">Unlock Mr.Heart Plus</h1>
+  <div style="margin:12px 0"><p class="perk">Daily workouts built from your exercises</p><p class="perk">Streak tracking and progress history</p><p class="perk">Cancel anytime in PayPal</p></div>
+  <p class="c mu" id="payMsg"></p>
+  <div class="card plan best"><span class="badge">BEST VALUE · SAVE 48%</span><div class="price">$49.99<small class="mu" style="font-size:16px"> / year</small></div><p class="mu" style="margin-bottom:10px">7 days free, then billed yearly</p><div id="pp-annual"></div></div>
+  <div class="card plan"><div class="price">$7.99<small class="mu" style="font-size:16px"> / month</small></div><div id="pp-monthly" style="margin-top:10px"></div></div>
+  <p class="c"><button class="link" id="payRefresh">I already subscribed</button> <button class="link" id="payOut">Log out</button></p>
+</section>
+
+<section class="scr" id="app">
+  <div class="tab on" id="t-home">
+    <div class="streak" id="streak">
+      <svg viewBox="0 0 64 80" aria-hidden="true"><defs><linearGradient id="fg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff5a1f"/><stop offset=".6" stop-color="#ffb347"/><stop offset="1" stop-color="#ffe08a"/></linearGradient></defs><path d="M32 2c4 14 22 24 22 46a22 22 0 0 1-44 0c0-10 5-17 10-22 1 7 4 10 8 12C26 28 26 14 32 2z" fill="url(#fg)"/><path d="M32 40c3 6 10 9 10 18a10 10 0 0 1-20 0c0-6 4-9 6-12 1 3 2 4 4 4-1-4-1-7 0-10z" fill="#fff3c4" opacity=".9"/></svg>
+      <div><b id="sStreak">0</b><span>day streak</span></div>
+    </div>
+    <div class="stage"><img id="mascot" alt="Mr.Heart" src="heart-awake.png"></div>
+    <div class="bh"><img id="bImg" alt="Badge" src="badge-committed-silver.webp"><p class="cap" id="bCap"></p></div>
+    <button class="btn" id="start">Start exercise</button>
+  </div>
+
+  <div class="tab" id="t-profile">
+    <div class="c"><img src="heart-awake.png" alt="" width="100"></div>
+    <h2 class="c" id="pMail" style="font-size:20px;word-break:break-all"></h2>
+    <p class="c mu" id="pPlan" style="margin-bottom:14px"></p>
+    <div class="card"><b>Level <span id="pLvl">1</span></b><span class="mu"> · <span id="pXp">0</span> XP</span><div class="xp"><i id="pBar" style="width:0"></i></div><p class="mu" style="margin-top:8px;font-size:14px"><span id="pNext">200</span> XP to next level</p></div>
+    <div class="row3"><div class="card"><b id="pTotal">0</b><span>workouts</span></div><div class="card"><b id="pBest">0</b><span>best streak</span></div><div class="card"><b id="pCount">0</b><span>exercises</span></div></div>
+    <div class="card"><b>Fitness level</b><div class="chips" style="margin-top:10px" id="pLevels"></div></div>
+    <button class="btn ghost" id="editEx" style="margin-bottom:10px">Edit daily exercises</button>
+    <button class="btn ghost" id="signout">Log out</button>
+  </div>
+
+  <div class="tab" id="t-progress">
+    <h2 style="margin:6px 0 14px">Progress</h2>
+    <div id="badges"></div>
+    <div class="row3"><div class="card"><b id="gWeek">0</b><span>this week</span></div><div class="card"><b id="gTotal">0</b><span>total</span></div><div class="card"><b id="gBest">0</b><span>best streak</span></div></div>
+    <div class="card"><b>Last 14 days</b><div class="grid14" id="grid"></div></div>
+  </div>
+</section>
+
+<nav id="nav"><button class="on" data-tab="home">Home</button><button data-tab="profile">Profile</button><button data-tab="progress">Progress</button></nav>
+
+<div id="cer" role="dialog" aria-label="Celebration">
+  <canvas id="cv"></canvas>
+  <div class="hero"><img id="cHeart" src="heart-awake.png" alt="">
+    <svg id="cCrown" viewBox="0 0 100 70" aria-hidden="true"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#ff9d2e"/></linearGradient></defs><path d="M6 60 L0 12 L28 34 L50 3 L72 34 L100 12 L94 60Z" fill="url(#cg)" stroke="#7a4300" stroke-width="3" stroke-linejoin="round"/><rect x="5" y="54" width="90" height="11" rx="4" fill="#ffc25c" stroke="#7a4300" stroke-width="3"/><circle cx="50" cy="38" r="6" fill="#e11d2a"/></svg></div>
+  <img id="cBadge" alt="">
+  <h2 id="cTitle"></h2><p class="mu" id="cSub"></p>
+  <button class="btn" id="cNext">Continue</button>
+</div>
+
+<div id="ex" role="dialog" aria-label="Workout">
+  <img id="exImg" alt="Mr.Heart" src="heart-awake.png">
+  <p class="mu" id="exPhase"></p>
+  <h2 id="exName"></h2>
+  <div class="t" id="exTime">30</div>
+  <div class="xp"><i id="exBar" style="width:0"></i></div>
+  <div class="card" id="exHow" style="margin-top:16px"></div>
+  <button class="btn ghost" id="exQuit" style="max-width:240px;margin-top:auto">Quit</button>
+</div>
+
+<script>
+const API_BASE = 'https://mr-heart.onrender.com'; // your Render server
+const SITE_URL = location.origin;
+const PLAN_ANNUAL = 'P-2MR83265LH5452314NLXRRLQ', PLAN_MONTHLY = 'P-2CD21728JC829371DNLXRPFQ';
+const PAYPAL_CLIENT = 'BAA8bGxWP8Qy_Un_xkAGO7LDioFhOoTSq6yH36DUff3ELNK8-M_Y-KFk7SWBsWZean7p4K4NbZgcSzMRrc';
+
+const EX = {
+ 'Cardio': [
+  ['Jumping jacks','Jump your feet wide as your arms swing overhead, then jump back together.'],
+  ['High knees','Run in place, driving each knee up to hip height.'],
+  ['Butt kicks','Jog in place, kicking your heels up toward your glutes.'],
+  ['Mountain climbers','From a plank, drive your knees to your chest, one at a time, fast.'],
+  ['Burpees','Squat, hands down, kick feet back, jump in, then leap up.'],
+  ['Skater hops','Leap side to side, landing on one leg and swinging the other behind.'],
+  ['Jump rope (no rope)','Hop lightly on the balls of your feet, turning your wrists like a rope.'],
+  ['Shadow boxing','Stay light on your feet and throw quick jabs and crosses.'],
+  ['Star jumps','Crouch low, then explode up spreading your arms and legs wide.'],
+  ['Fast feet','Take tiny, quick steps in place, staying low on the balls of your feet.']],
+ 'Legs': [
+  ['Squats','Feet shoulder-width, sit your hips back and down, chest up, then stand.'],
+  ['Lunges','Step forward and lower until both knees bend 90 degrees, then push back.'],
+  ['Reverse lunges','Step back and lower, then drive through the front heel to stand.'],
+  ['Jump squats','Squat down, then explode upward and land softly.'],
+  ['Glute bridges','Lie on your back, knees bent, lift your hips and squeeze your glutes.'],
+  ['Wall sit','Back flat on a wall, thighs parallel to the floor. Hold.'],
+  ['Calf raises','Rise onto your toes, pause, then lower slowly.'],
+  ['Side lunges','Step wide to one side, sit into that hip, then push back.']],
+ 'Upper body': [
+  ['Push-ups','Hands under shoulders, body straight, lower your chest, then press up.'],
+  ['Knee push-ups','Same as a push-up, with your knees resting on the floor.'],
+  ['Diamond push-ups','Hands close together under your chest, lower and press up.'],
+  ['Tricep dips','Hands on a chair edge, bend your elbows to lower your hips, then press up.'],
+  ['Pike push-ups','Hips high like an upside-down V, bend your elbows to lower your head.'],
+  ['Arm circles','Arms straight out, make small circles, then reverse direction.'],
+  ['Plank shoulder taps','In a plank, tap each shoulder with the opposite hand. Keep hips still.'],
+  ['Superman','Lie face down, lift your arms and legs off the floor, and hold.']],
+ 'Core': [
+  ['Plank','Forearms down, body in a straight line, core tight. Hold.'],
+  ['Crunches','Lie on your back, knees bent, curl your shoulders toward your hips.'],
+  ['Bicycle crunches','Pedal your legs, touching each elbow to the opposite knee.'],
+  ['Leg raises','Lie flat, raise straight legs to vertical, then lower slowly.'],
+  ['Russian twists','Sit leaning back, feet up, and twist side to side.'],
+  ['Flutter kicks','Lie back, legs straight and low, kick up and down in small beats.'],
+  ['Dead bug','On your back, lower the opposite arm and leg, then switch.'],
+  ['Side plank','On one forearm, lift your hips so your body is a straight line. Hold.']],
+ 'Mobility': [
+  ['Cat-cow','On all fours, arch your back up, then dip it down, slowly.'],
+  ["Child's pose",'Sit back on your heels, arms stretched forward, forehead down.'],
+  ['Hip circles','Hands on hips, draw big slow circles, then reverse.'],
+  ['Standing quad stretch','Hold one ankle behind you and pull your heel toward your glute.'],
+  ['Hamstring stretch','Heel forward, toes up, hinge at the hips with a flat back.'],
+  ['Torso twists','Feet planted, rotate your upper body gently side to side.']]
+};
+const HOW = {}; Object.values(EX).forEach(g => g.forEach(([n, h]) => HOW[n] = h));
+const MOVE_IMG = { 'Push-ups': 'move-pushups.gif' };
+const LV = { beginner: { n: 5, work: 30, rest: 20 }, intermediate: { n: 6, work: 40, rest: 15 }, pro: { n: 8, work: 45, rest: 10 } };
+
+const $ = id => document.getElementById(id);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const todayStr = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const dayNum = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) / 864e5; };
+
+let S = { xp: 0, streak: 0, best: 0, total: 0, last: null, hist: [], exercises: [], level: 'beginner' };
+let sb = null, token = null, isPlus = false, email = '', cur = 'splash', editing = false, signup = true;
+const sim = new URLSearchParams(location.search).get('missed'); // test: ?missed=1, 2 or 3
+
+try { const p = JSON.parse(localStorage.getItem('mhPending') || '{}'); if (p.exercises) S.exercises = p.exercises; if (p.level) S.level = p.level; } catch (e) {}
+const keepPending = () => { try { localStorage.setItem('mhPending', JSON.stringify({ exercises: S.exercises, level: S.level })); } catch (e) {} };
+
+function go(id) {
+  cur = id;
+  document.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s.id === id));
+  $('nav').classList.toggle('on', id === 'app');
+  window.scrollTo(0, 0);
+  if (id === 'pay') setupPay();
+  if (id === 'app') render();
+}
+
+// ---------- server ----------
+const api = (path, opts = {}) => fetch(API_BASE + path, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token } });
+function save() {
+  keepPending();
+  if (!token || sim !== null) return;
+  api('/api/progress', { method: 'PUT', body: JSON.stringify(S) }).catch(() => {});
+}
+async function loadMe() {
+  const res = await api('/api/me');
+  if (!res.ok) { await sb.auth.signOut(); return false; }
+  const me = await res.json();
+  const pending = { exercises: S.exercises, level: S.level };
+  Object.assign(S, me.profile);
+  if (!S.exercises.length && pending.exercises.length) { S.exercises = pending.exercises; S.level = pending.level; save(); }
+  isPlus = !!me.plus; email = me.email || '';
+  initSeen();
+  return true;
+}
+function route() { if (!S.exercises.length) return go('pick'); if (!isPlus) return go('pay'); go('app'); }
+
+async function getConfig() {
+  for (let i = 0; i < 8; i++) {
+    try { const r = await fetch(API_BASE + '/api/config'); if (r.ok) return r.json(); } catch (e) {}
+    await wait(4000);
+  }
+  throw new Error('down');
+}
+async function boot() {
+  const t0 = Date.now();
+  const hint = setTimeout(() => $('wake').classList.add('on'), 2500);
+  try {
+    const cfg = await getConfig();
+    sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+    const { data } = await sb.auth.getSession();
+    await wait(Math.max(0, 1800 - (Date.now() - t0)));
+    clearTimeout(hint);
+    sb.auth.onAuthStateChange((ev, session) => {
+      token = session ? session.access_token : null;
+      if (ev === 'SIGNED_IN' && ['auth', 'check'].includes(cur)) loadMe().then(ok => ok && route());
+      if (ev === 'SIGNED_OUT') { isPlus = false; go('auth'); setMode(false); }
+    });
+    if (data.session) { token = data.session.access_token; if (await loadMe()) return route(); }
+    go('pick');
+  } catch (e) {
+    $('wake').classList.add('on');
+    $('wake').innerHTML = '<p class="mu">We could not reach the server.</p><button class="link" onclick="location.reload()">Try again</button>';
+  }
+}
+
+// ---------- exercise picker ----------
+function drawPicker() {
+  $('groups').innerHTML = Object.entries(EX).map(([g, list]) =>
+    `<h3 class="grp">${g}</h3><div class="chips">${list.map(([n]) => `<button class="chip ${S.exercises.includes(n) ? 'on' : ''}" data-n="${n.replace(/"/g, '&quot;')}">${n}</button>`).join('')}</div>`).join('');
+  updPick();
+}
+function updPick() {
+  const n = S.exercises.length;
+  $('pickNext').disabled = n < 3;
+  $('pickNext').textContent = n < 3 ? `Pick ${3 - n} more` : (editing ? `Save (${n} selected)` : `Next (${n} selected)`);
+  $('toLogin').style.display = editing ? 'none' : '';
+}
+$('groups').onclick = e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const n = b.dataset.n, i = S.exercises.indexOf(n);
+  if (i >= 0) S.exercises.splice(i, 1); else S.exercises.push(n);
+  b.classList.toggle('on'); updPick();
+};
+$('pickNext').onclick = () => { keepPending(); if (editing) { editing = false; save(); go('app'); showTab('profile'); } else { markLevel(); go('level'); } };
+$('toLogin').onclick = () => { go('auth'); setMode(false); };
+
+function markLevel() { document.querySelectorAll('.lv').forEach(b => b.classList.toggle('on', b.dataset.lv === S.level)); }
+document.querySelectorAll('.lv').forEach(b => b.onclick = () => { S.level = b.dataset.lv; markLevel(); });
+document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => go(b.dataset.back));
+$('levelNext').onclick = () => { keepPending(); if (token) { save(); route(); } else { go('auth'); setMode(true); } };
+
+// ---------- auth ----------
+function setMode(isSignup) {
+  signup = isSignup;
+  $('authTitle').textContent = isSignup ? 'Create your account' : 'Welcome back';
+  $('authGo').textContent = isSignup ? 'Create account' : 'Log in';
+  $('authSwap').textContent = isSignup ? 'I already have an account' : 'Create a new account';
+  $('authMsg').textContent = '';
+}
+$('authSwap').onclick = () => setMode(!signup);
+$('authGo').onclick = async () => {
+  const em = $('email').value.trim(), password = $('pass').value, btn = $('authGo');
+  $('authMsg').textContent = '';
+  if (!em || password.length < 6) { $('authMsg').textContent = 'Enter your email and a password of 6+ characters.'; return; }
+  const label = btn.textContent; btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Please wait...';
+  const { data, error } = signup
+    ? await sb.auth.signUp({ email: em, password, options: { emailRedirectTo: SITE_URL } })
+    : await sb.auth.signInWithPassword({ email: em, password });
+  btn.disabled = false; btn.textContent = label;
+  if (error) { $('authMsg').textContent = error.message; return; }
+  if (signup && !data.session) { $('checkMail').textContent = em; go('check'); }
+};
+$('checkGo').onclick = () => { go('auth'); setMode(false); };
+$('signout').onclick = () => sb.auth.signOut();
+$('payOut').onclick = () => sb.auth.signOut();
+
+// ---------- paywall ----------
+let ppReady = false;
+async function setupPay() {
+  if (ppReady) return; ppReady = true;
+  try {
+    await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://www.paypal.com/sdk/js?client-id=' + PAYPAL_CLIENT + '&vault=true&intent=subscription'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  } catch (e) { $('payMsg').textContent = 'Could not load PayPal. Check your connection and refresh.'; ppReady = false; return; }
+  const mk = (sel, plan) => paypal.Buttons({
+    style: { shape: 'pill', color: 'gold', layout: 'vertical', label: 'subscribe' },
+    createSubscription: (d, a) => a.subscription.create({ plan_id: plan }),
+    onApprove: async d => {
+      $('payMsg').textContent = 'Confirming your subscription...';
+      const r = await (await api('/api/subscription', { method: 'POST', body: JSON.stringify({ subscriptionID: d.subscriptionID }) })).json();
+      if (r.plus) { isPlus = true; go('app'); } else $('payMsg').textContent = 'Could not confirm yet. Tap "I already subscribed" in a minute.';
+    }
+  }).render(sel);
+  mk('#pp-annual', PLAN_ANNUAL); mk('#pp-monthly', PLAN_MONTHLY);
+}
+$('payRefresh').onclick = async () => { if (await loadMe()) route(); };
+
+// ---------- home / profile / progress ----------
+function missedDays() { if (sim !== null) return Number(sim); if (!S.last) return 0; return Math.max(0, dayNum(todayStr()) - dayNum(S.last) - 1); }
+const doneToday = () => S.last === todayStr() && sim === null;
+
+function render() {
+  const m = missedDays();
+  if (m >= 3 && S.streak > 0 && sim === null) { S.streak = 0; save(); }
+  $('sStreak').textContent = m >= 3 ? 0 : S.streak;
+  $('streak').classList.toggle('lit', doneToday());
+  $('mascot').src = m >= 3 ? 'heart-bed.png' : m >= 1 ? 'heart-sleepy.png' : 'heart-awake.png';
+  $('start').disabled = doneToday();
+  $('start').textContent = doneToday() ? 'Done for today' : (m >= 3 ? 'Wake up Mr.Heart' : 'Start exercise');
+
+  const lvl = Math.floor(S.xp / 200) + 1;
+  $('pMail').textContent = email; $('pPlan').textContent = isPlus ? 'Mr.Heart Plus' : 'Free';
+  $('pLvl').textContent = lvl; $('pXp').textContent = S.xp; $('pBar').style.width = (S.xp % 200) / 2 + '%'; $('pNext').textContent = 200 - (S.xp % 200);
+  $('pTotal').textContent = S.total; $('pBest').textContent = S.best; $('pCount').textContent = S.exercises.length;
+  $('pLevels').innerHTML = ['beginner', 'intermediate', 'pro'].map(l => `<button class="chip ${S.level === l ? 'on' : ''}" data-l="${l}">${l[0].toUpperCase() + l.slice(1)}</button>`).join('');
+
+  const week = S.hist.filter(h => dayNum(todayStr()) - dayNum(h) < 7).length;
+  $('gWeek').textContent = week; $('gTotal').textContent = S.total; $('gBest').textContent = S.best;
+  let g = ''; for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); g += `<i class="${S.hist.includes(todayStr(d)) ? 'hit' : ''}"></i>`; }
+  $('grid').innerHTML = g;
+  renderBadges();
+  if (seen.legend && S.streak < 30 && sim === null && cur === 'app') { seen.legend = false; saveSeen(); runCer([CER.lost]); }
+}
+$('pLevels').onclick = e => { const b = e.target.closest('.chip'); if (b) { S.level = b.dataset.l; save(); render(); } };
+$('editEx').onclick = () => { editing = true; drawPicker(); go('pick'); };
+function showTab(t) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.id === 't-' + t));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+// ---------- workout ----------
+let plan = [], idx = 0, left = 0, timer = null;
+function buildPlan() {
+  const L = LV[S.level] || LV.beginner, list = S.exercises.length ? S.exercises : ['Jumping jacks', 'Squats', 'Plank'];
+  const start = dayNum(todayStr()) % list.length, picks = [];
+  for (let i = 0; i < Math.min(L.n, list.length); i++) picks.push(list[(start + i) % list.length]);
+  plan = [];
+  picks.forEach((n, i) => { plan.push({ name: n, secs: L.work, total: picks.length, num: i + 1 }); if (i < picks.length - 1) plan.push({ rest: true, secs: L.rest, next: picks[i + 1] }); });
+}
+function showStep() {
+  const p = plan[idx];
+  $('exImg').src = p.rest ? 'heart-awake.png' : (MOVE_IMG[p.name] || 'heart-awake.png');
+  $('exPhase').textContent = p.rest ? 'Rest' : `Exercise ${p.num} of ${p.total}`;
+  $('exName').textContent = p.rest ? 'Catch your breath' : p.name;
+  $('exHow').textContent = p.rest ? `Next: ${p.next}. ${HOW[p.next] || ''}` : (HOW[p.name] || '');
+  $('exTime').textContent = left;
+  $('exBar').style.width = (100 - left / p.secs * 100) + '%';
+}
+function tick() { left--; if (left <= 0) { idx++; if (idx >= plan.length) return finish(); left = plan[idx].secs; } showStep(); }
+$('start').onclick = () => { buildPlan(); idx = 0; left = plan[0].secs; showStep(); $('ex').classList.add('on'); clearInterval(timer); timer = setInterval(tick, 1000); };
+$('exQuit').onclick = () => { clearInterval(timer); $('ex').classList.remove('on'); };
+function finish() {
+  clearInterval(timer); $('ex').classList.remove('on');
+  let gained = 0;
+  if (S.last !== todayStr()) {
+    S.streak = missedDays() >= 3 ? 1 : S.streak + 1;
+    S.best = Math.max(S.best, S.streak);
+    gained = 50 + Math.min(S.streak, 10) * 5; S.xp += gained;
+    S.total++; S.last = todayStr(); S.hist.push(S.last); save();
+  }
+  render();
+  if (!gained) return;
+  const popEl = $('sStreak'); popEl.classList.remove('pop'); void popEl.offsetWidth; popEl.classList.add('pop');
+  const q = [{ title: 'Workout complete', sub: `+${gained} XP · ${S.streak} day streak` }];
+  if (S.total >= 1 && !seen.committed) { seen.committed = true; q.push(CER.committed); }
+  if (S.best >= 10 && !seen.champion) { seen.champion = true; q.push(CER.champion); }
+  if (S.streak >= 30 && !seen.legend) { seen.legend = true; q.push(CER.legend); }
+  saveSeen(); runCer(q);
+}
+
+// ---------- badges + ceremonies ----------
+let seen = { committed: false, champion: false, legend: false };
+const seenKey = () => 'mhSeen:' + email;
+function saveSeen() { try { localStorage.setItem(seenKey(), JSON.stringify(seen)); } catch (e) {} }
+function initSeen() {
+  let s = null; try { s = JSON.parse(localStorage.getItem(seenKey())); } catch (e) {}
+  seen = s || { committed: S.total >= 1, champion: S.best >= 10, legend: S.streak >= 30 };
+  if (!s) saveSeen();
+}
+const CER = {
+  committed: { title: 'COMMITTED', sub: 'You showed up. Day one is done.', img: 'badge-committed-power.webp', anim: true },
+  champion: { title: 'CHAMPION', sub: '10 days straight. You have earned the crown.', img: 'badge-champion.webp' },
+  legend: { title: 'LEGEND', sub: '30 days. Your stars climb every day you keep going.', img: 'badge-legend.webp' },
+  lost: { title: 'LEGEND LOST', sub: 'Your streak reset. Win it back with 30 days.', img: 'badge-legend.webp', lost: true }
+};
+function renderBadges() {
+  const m = missedDays(), stars = Math.max(0, S.streak - 29);
+  const e = { committed: S.total >= 1, champion: S.best >= 10, legend: S.streak >= 30 && m < 3 };
+  let img = 'badge-committed-silver.webp', cls = '', cap = 'Finish your first workout to earn Committed', warn = false;
+  if (e.legend) { img = 'badge-legend.webp'; cls = ''; cap = '★ ' + stars + ' · Legend'; if (m >= 1) { cap = 'Legend at risk. Work out today!'; warn = true; } }
+  else if (e.champion) { img = 'badge-champion.webp'; cls = ''; cap = Math.min(S.streak, 30) + '/30 days to Legend'; }
+  else if (e.committed) { img = 'badge-committed-fire.webp'; cls = ''; cap = Math.min(S.streak, 10) + '/10 days to Champion'; }
+  $('bImg').src = img; $('bImg').className = cls; $('bCap').textContent = cap; $('bCap').classList.toggle('warn', warn);
+
+  const cards = [
+    ['Committed', e.committed, 'badge-committed-fire.webp', 'badge-committed-silver.webp', '', 'First workout', e.committed ? 1 : 0, 'Earned'],
+    ['Champion', e.champion, 'badge-champion.webp', 'badge-champion.webp', 'lk', '10-day streak', Math.min(S.streak, 10) / 10, 'Earned'],
+    ['Legend', e.legend, 'badge-legend.webp', 'badge-legend.webp', 'lk', '30-day streak', Math.min(S.streak, 30) / 30, '★ ' + stars]
+  ];
+  $('badges').innerHTML = '<div class="card"><b>Badges</b><div class="bgrid">' + cards.map(c =>
+    `<div><img src="${c[e2(c[1])]}" class="${c[1] ? '' : c[4]}" alt="${c[0]}"><b>${c[0]}</b><small>${c[1] ? c[7] : c[5]}</small><div class="mini"><i style="width:${(c[1] ? 1 : c[6]) * 100}%"></i></div></div>`).join('') + '</div></div>';
+}
+const e2 = earned => earned ? 2 : 3;
+
+let cq = [];
+const calm = matchMedia('(prefers-reduced-motion:reduce)').matches;
+function runCer(q) { cq = q; nextCer(); }
+function nextCer() {
+  const c = cq.shift(), o = $('cer');
+  if (!c) { o.classList.remove('on'); render(); return; }
+  o.classList.remove('on'); void o.offsetWidth;
+  $('cHeart').src = c.lost ? 'heart-sleepy.png' : 'heart-awake.png';
+  $('cCrown').style.display = c.img && !c.lost ? 'block' : 'none';
+  $('cBadge').style.display = c.img ? 'block' : 'none';
+  if (c.img) { $('cBadge').src = c.anim ? (calm ? 'badge-committed-fire.webp' : c.img + '?t=' + Date.now()) : c.img; $('cBadge').className = c.lost ? 'lk' : ''; }
+  $('cTitle').textContent = c.title; $('cSub').textContent = c.sub;
+  $('cNext').textContent = cq.length ? 'Continue' : 'Awesome';
+  o.classList.toggle('fast', !c.img);
+  o.classList.add('on');
+  if (!c.lost && !calm) confetti();
+  if (navigator.vibrate) navigator.vibrate(c.lost ? [220] : [60, 40, 140]);
+}
+$('cNext').onclick = nextCer;
+function confetti() {
+  const c = $('cv'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const cols = ['#ffc25c', '#ff7a3d', '#34e0c0', '#7aa7ff', '#ffffff'];
+  const P = Array.from({ length: 120 }, () => ({ x: innerWidth / 2, y: innerHeight * .38, vx: (Math.random() - .5) * 15, vy: -Math.random() * 15 - 4, s: 5 + Math.random() * 6, c: cols[Math.random() * 5 | 0], r: Math.random() * 6 }));
+  let t = 0;
+  (function f() {
+    x.clearRect(0, 0, c.width, c.height);
+    P.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; p.r += .2; x.fillStyle = p.c; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * .6); x.restore(); });
+    if (++t < 150) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height);
+  })();
+}
+
+drawPicker(); markLevel(); setMode(true); boot();
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
